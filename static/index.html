@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LegalChat — Эрх зүйн лавлах</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">§</span>
+      <div>
+        <h1>LegalChat</h1>
+        <p>Эрх зүйн лавлах туслах</p>
+      </div>
+    </div>
+    <span class="demo-badge" title="Агуулга нь албан ёсны эх бичвэр биш">Жишээ өгөгдөл</span>
+  </header>
+
+  <main class="layout">
+    <!-- Зүүн тал: дэлгэрэнгүй мэдээлэл -->
+    <section class="detail" id="detail" aria-live="polite">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">§</div>
+        <h2>Дэлгэрэнгүй мэдээлэл</h2>
+        <p>
+          Баруун талын чатаас асуултаа асууна уу. Хариултад гарч ирэх
+          <span class="inline-link-demo">линк</span> дээр дарвал холбогдох
+          хуулийн зүйл, заалт энд бүрэн эхээрээ нээгдэнэ.
+        </p>
+      </div>
+      <article class="doc" id="doc" hidden></article>
+    </section>
+
+    <!-- Баруун тал: чат -->
+    <aside class="chat">
+      <div class="chat-head">
+        <h2>Чат</h2>
+        <button type="button" id="clearBtn" class="ghost-btn">Цэвэрлэх</button>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="suggestions" id="suggestions"></div>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <input
+          id="input"
+          type="text"
+          placeholder="Асуултаа бичнэ үү…"
+          aria-label="Асуулт"
+          maxlength="500"
+        />
+        <button type="submit" id="sendBtn" aria-label="Илгээх">Илгээх</button>
+      </form>
+    </aside>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
