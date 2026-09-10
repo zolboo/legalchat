@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LegalChat — Эрх зүйн лавлах</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f5eff'/%3E%3Ctext x='16' y='23' font-size='21' font-family='serif' font-weight='bold' fill='white' text-anchor='middle'%3E%C2%A7%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -12,25 +13,34 @@
       <span class="logo">§</span>
       <div>
         <h1>LegalChat</h1>
-        <p>энд өөрчлөлт орно Эрх зүйн лавлах туслах, ajil hunguvchilnu</p>
+        <p id="brandSub">legalinfo.mn-ийн эх бичвэр дээр ажилладаг локал эрх зүйн туслах</p>
       </div>
     </div>
-    <span class="demo-badge" title="Агуулга нь албан ёсны эх бичвэр биш">Жишээ өгөгдөл</span>
+    <span class="status-badge" id="statusBadge" title="Ачаалж байна…">…</span>
   </header>
 
   <main class="layout">
-    <!-- Зүүн тал: дэлгэрэнгүй мэдээлэл -->
+    <!-- Зүүн тал: дэлгэрэнгүй мэдээлэл, холбогдох материал -->
     <section class="detail" id="detail" aria-live="polite">
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">§</div>
-        <h2>Дэлгэрэнгүй мэдээлэл</h2>
-        <p>
-          Баруун талын чатаас асуултаа асууна уу. Хариултад гарч ирэх
-          <span class="inline-link-demo">линк</span> дээр дарвал холбогдох
-          хуулийн зүйл, заалт энд бүрэн эхээрээ нээгдэнэ.
-        </p>
+      <div class="detail-bar" id="detailBar" hidden>
+        <button type="button" class="ghost-btn" id="backBtn">← Олдсон материал</button>
+        <span class="detail-bar-label" id="detailBarLabel"></span>
       </div>
-      <article class="doc" id="doc" hidden></article>
+
+      <div class="detail-scroll" id="detailScroll">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">§</div>
+          <h2>Дэлгэрэнгүй мэдээлэл</h2>
+          <p>
+            Баруун талын чатаас асуултаа асууна уу. Агент индексээс олсон
+            <span class="inline-link-demo">холбогдох материалыг</span> энд шууд
+            жагсаах бөгөөд дээр нь дарвал тухайн заалт бүтэн эхээрээ нээгдэнэ.
+          </p>
+        </div>
+
+        <section class="materials" id="materials" hidden></section>
+        <article class="doc" id="doc" hidden></article>
+      </div>
     </section>
 
     <!-- Баруун тал: чат -->
@@ -53,6 +63,7 @@
           maxlength="500"
         />
         <button type="submit" id="sendBtn" aria-label="Илгээх">Илгээх</button>
+        <button type="button" id="stopBtn" class="stop-btn" hidden>Зогсоох</button>
       </form>
     </aside>
   </main>

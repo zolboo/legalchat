@@ -1,14 +1,23 @@
-"""Энгийн түлхүүр үгэнд суурилсан хайлт (гуравдагч сан ашиглаагүй).
+"""Жишээ өгөгдөл дээрх энгийн түлхүүр үгийн хайлт (нөөц горим).
+
+Үндсэн ажиллагаа нь `agentchat.py` дахь локал агент (hybrid эрэл + Ollama).
+Энэ модуль нь агент ачаалагдаагүй үед (numpy байхгүй, индекс үүсээгүй г.м)
+интерфейсийг амьд байлгах нөөц бөгөөд `python app.py --demo` гэж гараар ч
+сонгож болно.
 
 Монгол хэлний нөхцөл, тийн ялгалыг бүрэн задлахгүй тул үгийн эхний
-хэсгээр (prefix) харьцуулах аргыг ашиглав. Бодит төсөлд үүнийг
-embedding/vector search-ээр солино.
+хэсгээр (prefix) харьцуулах аргыг ашиглав.
 """
 
 import re
 from collections import Counter
 
-from data import DOCS, DOCS_BY_ID
+from data import DOCS, DOCS_BY_ID, SUGGESTIONS
+
+DISCLAIMER = (
+    "Энэ агуулга нь демо зориулалттай хялбаршуулсан жишээ бөгөөд албан ёсны "
+    "хуулийн эх бичвэр биш. Хууль зүйн зөвлөгөө болохгүй."
+)
 
 # Хайлтад нөлөөгүй түгээмэл үгс
 STOPWORDS = {
@@ -152,21 +161,27 @@ def answer(query):
 
     return {
         "text": "\n".join(lines),
+        "llm": False,
         "sources": [
             {
+                "n": i,
+                "cite": h["doc"]["law"] + " " + h["doc"]["article"],
                 "id": h["doc"]["id"],
-                "title": h["doc"]["title"],
                 "law": h["doc"]["law"],
-                "article": h["doc"]["article"],
+                "article": h["doc"]["article"] + " · " + h["doc"]["title"],
+                "category": "Жишээ өгөгдөл",
+                "enacted": h["doc"]["effective"],
+                "url": "",
                 "snippet": snippet(h["doc"], h["matched"]),
                 "score": h["score"],
             }
-            for h in hits
+            for i, h in enumerate(hits, 1)
         ],
     }
 
 
 def get_doc(doc_id):
+    """Дэлгэрэнгүй самбарын нэгдсэн бүтэц (agentchat.get_doc-той ижил)."""
     doc = DOCS_BY_ID.get(doc_id)
     if not doc:
         return None
@@ -174,18 +189,76 @@ def get_doc(doc_id):
         "id": doc["id"],
         "law": doc["law"],
         "article": doc["article"],
-        "title": doc["title"],
+        "chapter": "",
+        "section": doc["title"],
+        "category": "Жишээ өгөгдөл",
+        "enacted": doc["effective"],
+        "enforcement": "",
+        "url": "",
+        "source_file": "data.py",
         "summary": doc["summary"],
-        "effective": doc["effective"],
         "tags": doc["tags"],
         "body": doc["body"],
+        "same_law": {"items": [], "total": 0, "law": doc["law"]},
         "related": [
             {
                 "id": r,
-                "title": DOCS_BY_ID[r]["title"],
-                "article": DOCS_BY_ID[r]["article"],
+                "law": DOCS_BY_ID[r]["law"],
+                "article": DOCS_BY_ID[r]["article"] + " · " + DOCS_BY_ID[r]["title"],
+                "category": "Жишээ өгөгдөл",
+                "snippet": DOCS_BY_ID[r]["summary"],
+                "score": None,
             }
             for r in doc["related"]
             if r in DOCS_BY_ID
         ],
+        "note": DISCLAIMER,
     }
+
+
+# ---------------------------------------------------------------- backend
+
+
+class DemoBackend:
+    """`agentchat.AgentBackend`-тай ижил интерфейс — жишээ өгөгдөл дээр."""
+
+    mode = "demo"
+
+    def status(self):
+        return {
+            "mode": self.mode,
+            "llm": False,
+            "note": DISCLAIMER,
+            "chat_model": "",
+            "embed_model": "",
+            "host": "",
+            "chunks": len(DOCS),
+            "documents": len({d["law"] for d in DOCS}),
+            "categories": [],
+            "top_k": 3,
+            "index_dir": "data.py",
+            "disclaimer": DISCLAIMER,
+        }
+
+    def suggestions(self):
+        return SUGGESTIONS
+
+    def reset(self):
+        pass
+
+    def get_doc(self, doc_id):
+        return get_doc(doc_id)
+
+    def answer(self, question, category=None):
+        return answer(question)
+
+    def stream_answer(self, question, category=None):
+        result = answer(question)
+        yield "sources", {"sources": result["sources"], "llm": False, "note": ""}
+        yield "delta", {"text": result["text"]}
+        yield "done", {
+            "text": result["text"],
+            "sources": result["sources"],
+            "llm": False,
+            "elapsed": 0,
+        }
